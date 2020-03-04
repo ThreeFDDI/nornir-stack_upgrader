@@ -1,0 +1,5 @@
+---
+cat3750_lab:
+  hostname: 172.20.58.41
+  groups:
+    - cat3750v2
