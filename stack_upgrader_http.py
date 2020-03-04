@@ -173,7 +173,7 @@ def main():
     
     svr_ip = "172.20.58.101"
     # Start the threaded HTTP server
-    os.chdir("/Users/jt/JTGIT/Nornir/stack_upgrader/images")
+    os.chdir("images")
     
     print("Starting HTTP server.")
     server = ThreadedHTTPServer(svr_ip, 8000)
