@@ -124,8 +124,31 @@ def upgrade_3750(task):
             print(f"{task.host}: {line}")
             
 
-def upgrade_3650():
-    print("3650 upgrade function goes here.")
+def upgrade_3650(task):
+    print(f"{task.host}: Upgraging 3750 software.")
+    upgrade_img = task.host['upgrade_img']
+    if task.host['version'].startswith("16"):
+        print("16.x")
+        cmd = f"request platform software package install switch all file \
+            http://10.165.13.125:8000/{upgrade_img} on-reboot"
+    else:
+        print("NOT 16.x")
+        cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
+            http://10.165.13.125:8000/{upgrade_img}"
+
+    # run upgrade command on switch stack
+    upgrade_sw = task.run(
+        task=netmiko_send_command,
+        use_timing=True,
+        command_string=cmd,
+        delay_factor=100
+    )
+
+    # print upgrade results
+    result = upgrade_sw.result.splitlines()
+    for line in result:
+        if "error" in line.lower() or "installed" in line.lower():
+            print(f"{task.host}: {line}")
     
 
 # Reload switches
