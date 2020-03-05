@@ -1,7 +1,6 @@
 #!/usr/local/bin/python3
-
 '''
-This script is used to upgrade software on Cisco Catalyst switch stacks.
+This script is used to upgrade software on Cisco Catalyst 3750 and 3650 switch stacks.
 '''
 
 import threading
@@ -105,7 +104,7 @@ def stack_upgrader(task):
 
 
 def upgrade_3750(task):
-    print(f"{task.host}: Upgraging 3750v2 software.")
+    print(f"{task.host}: Upgraging 3750 software.")
     upgrade_img = task.host['upgrade_img']
     cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
         http://172.20.58.101:8000/{upgrade_img}"
@@ -118,11 +117,9 @@ def upgrade_3750(task):
         delay_factor=100
     )
 
-    print(upgrade_sw.result)
-
-
-def upgrade_3750x():
-    print("3750x upgrade function goes here.")
+    # print upgrade results
+    result = upgrade_sw.result.splitlines()
+    print(f"{task.host}: {result[-1]}")
             
 
 def upgrade_3650():
@@ -198,49 +195,6 @@ def main():
     print("Stopping HTTP server.")
 
     print(f"Failed hosts: {nr.data.failed_hosts}")
-
-
-
-def ver_output():
-    _output = """
-
-    ISE_3650
-    [{'config_register': '0x102',
-    'hardware': ['WS-C3650-48PD'],
-    'hostname': 'ISE_3650',
-    'mac': ['38:90:a5:67:5f:00'],
-    'reload_reason': 'Reload Command',
-    'rommon': 'IOS-XE',
-    'running_image': 'packages.conf',
-    'serial': ['FDO2129Q2N8'],
-    'uptime': '4 weeks, 5 days, 23 hours, 14 minutes',
-    'version': '16.9.4'}]
-
-    ISE_3750
-    [{'config_register': '0xF',
-    'hardware': ['WS-C3750V2-24PS'],
-    'hostname': 'ISE_3750',
-    'mac': ['B4:A4:E3:DE:FB:80'],
-    'reload_reason': 'power-on',
-    'rommon': 'Bootstrap',
-    'running_image': 'c3750-ipbasek9-mz.122-55.SE12.bin',
-    'serial': ['FDO1436V27C'],
-    'uptime': '1 week, 2 days, 20 hours, 37 minutes',
-    'version': '12.2(55)SE12'}]
-
-    ISE_3750X
-    [{'config_register': '0xF',
-    'hardware': ['WS-C3750X-24'],
-    'hostname': 'ISE_3750X',
-    'mac': ['F8:72:EA:A5:47:00'],
-    'reload_reason': 'Reload command',
-    'rommon': 'Bootstrap',
-    'running_image': 'c3750e-universalk9-mz.152-4.E8.bin',
-    'serial': ['FDO1720H3EZ'],
-    'uptime': '4 weeks, 6 days, 19 hours, 27 minutes',
-    'version': '15.2(4)E8'}]
-
-    """
 
 
 if __name__ == "__main__":
