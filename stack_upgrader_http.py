@@ -107,7 +107,7 @@ def upgrade_3750(task):
     print(f"{task.host}: Upgraging 3750 software.")
     upgrade_img = task.host['upgrade_img']
     cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
-        http://10.156.13.125:8000/{upgrade_img}"
+        http://10.165.13.125:8000/{upgrade_img}"
 
     # run upgrade command on switch stack
     upgrade_sw = task.run(
