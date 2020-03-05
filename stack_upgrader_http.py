@@ -107,7 +107,7 @@ def upgrade_3750(task):
     print(f"{task.host}: Upgraging 3750 software.")
     upgrade_img = task.host['upgrade_img']
     cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
-        http://172.20.58.101:8000/{upgrade_img}"
+        http://10.156.13.125:8000/{upgrade_img}"
 
     # run upgrade command on switch stack
     upgrade_sw = task.run(
@@ -119,7 +119,9 @@ def upgrade_3750(task):
 
     # print upgrade results
     result = upgrade_sw.result.splitlines()
-    print(f"{task.host}: {result[-1]}")
+    for line in result:
+        if "error" in line.lower() or "installed" in line.lower():
+            print(f"{task.host}: {line}")
             
 
 def upgrade_3650():
@@ -168,12 +170,11 @@ def main():
     # filter The Norn
     nr = nr.filter(platform="cisco_ios")
     
-    svr_ip = "172.20.58.101"
     # Start the threaded HTTP server
     os.chdir("images")
     
     print("Starting HTTP server.")
-    server = ThreadedHTTPServer(svr_ip, 8000)
+    server = ThreadedHTTPServer('10.165.13.125', 8000)
     server.start()
 
 
