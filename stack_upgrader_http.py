@@ -140,7 +140,7 @@ def upgrade_3650(task):
         task=netmiko_send_command,
         use_timing=True,
         command_string=cmd,
-        delay_factor=150
+        delay_factor=100
     )
 
     # print upgrade results
