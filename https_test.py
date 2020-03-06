@@ -32,15 +32,15 @@ class ThreadedHTTPServer(object):
         self.server.server_close()
 
  
-    # Start the threaded HTTP server
-    os.chdir("images")
-    
-    print("Starting HTTP server.")
-    server = ThreadedHTTPServer('10.165.13.125', 8000)
-    server.start()
+# Start the threaded HTTP server
+os.chdir("images")
 
-    import ipdb; ipdb.set_trace()
+print("Starting HTTP server.")
+server = ThreadedHTTPServer('10.165.13.125', 8000)
+server.start()
 
-    # Close the server
-    server.stop()
-    print("Stopping HTTP server.")
+import ipdb; ipdb.set_trace()
+
+# Close the server
+server.stop()
+print("Stopping HTTP server.")
