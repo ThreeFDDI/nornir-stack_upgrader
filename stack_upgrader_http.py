@@ -150,7 +150,8 @@ def upgrade_3650(task):
         if "error" in line.lower() or "installed" in line.lower():
             print(f"{task.host}: {line}")
 
-def upgrade_3650(task):
+
+def upgrade_9300(task):
     print(f"{task.host}: Upgraging Catalyst 9300 software.")
     upgrade_img = task.host['upgrade_img']
     cmd = f"request platform software package install switch all file \
@@ -163,6 +164,13 @@ def upgrade_3650(task):
         command_string=cmd,
         delay_factor=100
     )
+
+    # print upgrade results
+    result = upgrade_sw.result.splitlines()
+    for line in result:
+        if "error" in line.lower() or "installed" in line.lower():
+            print(f"{task.host}: {line}")
+
 
 # Reload switches
 def reload_sw(task):
