@@ -127,7 +127,7 @@ def upgrade_3750(task):
 def upgrade_3650(task):
     print(f"{task.host}: Upgraging Catalyst 3650 software.")
     upgrade_img = task.host['upgrade_img']
-    if task.host['version'].startswith("16"):
+    if task.host['current_version'].startswith("16"):
         print("16.x")
         cmd = f"request platform software package install switch all file \
             http://10.165.13.125:8000/{upgrade_img} on-reboot"
