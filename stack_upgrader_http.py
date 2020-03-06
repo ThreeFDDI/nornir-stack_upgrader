@@ -148,12 +148,12 @@ def upgrade_3650(task):
     # print upgrade results
     #print(upgrade_sw.result)
 
-    statuses = ['error','installed','failed','success']
+    statuses = ['error','installed','fail','success']
     result = upgrade_sw.result.splitlines()
     for line in result:
         for status in statuses:
             if status in line.lower():
-            print(f"{task.host}: {line}")
+                print(f"{task.host}: {line}")
 
 
 def upgrade_9300(task):
