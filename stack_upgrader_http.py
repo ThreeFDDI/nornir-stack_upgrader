@@ -130,7 +130,7 @@ def upgrade_3650(task):
     if task.host['current_version'].startswith("16"):
         print("16.x")
         cmd = f"request platform software package install switch all file \
-            http://10.165.13.125:8000/{upgrade_img} on-reboot"
+            http://10.165.13.125:8000/{upgrade_img} new auto-copy"
     else:
         print("NOT 16.x")
         cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
