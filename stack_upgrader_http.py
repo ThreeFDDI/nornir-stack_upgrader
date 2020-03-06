@@ -144,10 +144,11 @@ def upgrade_3650(task):
     )
 
     # print upgrade results
-    result = upgrade_sw.result.splitlines()
-    for line in result:
-        if "error" in line.lower() or "installed" in line.lower():
-            print(f"{task.host}: {line}")
+    print(upgrade_sw.result)
+#    result = upgrade_sw.result.splitlines()
+#    for line in result:
+#        if "error" in line.lower() or "installed" in line.lower():
+#            print(f"{task.host}: {line}")
 
 
 def upgrade_9300(task):
