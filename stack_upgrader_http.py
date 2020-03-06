@@ -127,14 +127,13 @@ def upgrade_3750(task):
 def upgrade_3650(task):
     print(f"{task.host}: Upgraging Catalyst 3650 software.")
     upgrade_img = task.host['upgrade_img']
-    if task.host['current_version'].startswith("16"):
-        print("16.x")
-        cmd = f"request platform software package install switch all file \
-            http://10.165.13.125:8000/{upgrade_img} new auto-copy"
-    else:
-        print("NOT 16.x")
-        cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
-            http://10.165.13.125:8000/{upgrade_img}"
+    task.host['current_version'].startswith("16"):
+    print("16.x")
+    cmd = f"request platform software package install switch all file http://10.165.13.125:8000/{upgrade_img} new auto-copy"
+#    else:
+#        print("NOT 16.x")
+#        cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
+#            http://10.165.13.125:8000/{upgrade_img}"
 
     # run upgrade command on switch stack
     upgrade_sw = task.run(
