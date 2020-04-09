@@ -17,6 +17,22 @@ from http.server import SimpleHTTPRequestHandler
 from pprint import pprint as pp
 
 
+# http server for file transfer
+class ThreadedHTTPServer(object):
+    handler = SimpleHTTPRequestHandler
+    def __init__(self, host, port):
+        self.server = socketserver.TCPServer((host, port), self.handler)
+        self.server_thread = threading.Thread(target=self.server.serve_forever)
+        self.server_thread.daemon = True
+
+    def start(self):
+        self.server_thread.start()
+
+    def stop(self):
+        self.server.shutdown()
+        self.server.server_close()
+
+
 # print formatting function
 def c_print(printme):
     # Print centered text with newline before and after
@@ -34,6 +50,8 @@ def proceed():
         c_print("******* EXITING SCRIPT *******")
         print('~'*80)    
         exit()
+    else:
+        c_print("********* PROCEEDING *********")
 
 
 # set device credentials
@@ -41,7 +59,7 @@ def kickoff(norn, username=None, password=None):
     # print banner
     print()
     print('~'*80)
-    c_print('This script will update software on Cisco Catalyst switch stacks')
+    c_print('This script will upgrade software on Cisco Catalyst switch stacks')
     #c_print(f"*** {task.host}: dot1x configuration applied ***")
     c_print('Checking inventory for credentials')
     # check for existing credentials in inventory
@@ -53,11 +71,9 @@ def kickoff(norn, username=None, password=None):
             host_obj.password = getpass()
             print()
 
-    print('~'*80)
-
 
 # Run show commands on each switch
-def run_commands(task):
+def get_info(task):
     c_print(f'*** {task.host}: running show comands ***')
     # run "show version" on each host
     sh_version = task.run(
@@ -96,35 +112,17 @@ def check_ver(task):
 
     # compare current with desired version
     if current == desired:
-        print(f"{task.host}: running {current} *** upgrade NOT needed ***")
+        c_print(f"*** {task.host}: running {current} upgrade NOT needed ***")
         # set host upgrade flag to False
         task.host['upgrade'] = False
     else:
-        print(f"{task.host}: running {current} *** must be upgraded ***")
+        print(f"*** {task.host}: running {current} must be upgraded ***")
         # set host upgrade flag to True
         task.host['upgrade'] = True
 
 
-# http server for file transfer
-class ThreadedHTTPServer(object):
-    handler = SimpleHTTPRequestHandler
-    def __init__(self, host, port):
-        self.server = socketserver.TCPServer((host, port), self.handler)
-        self.server_thread = threading.Thread(target=self.server.serve_forever)
-        self.server_thread.daemon = True
-
-    def start(self):
-        self.server_thread.start()
-
-    def stop(self):
-        self.server.shutdown()
-        self.server.server_close()
-
-
 # Stack upgrader main function
 def stack_upgrader(task):
-    # check software version
-    check_ver(task)
     # pull model from show version
     sw_model = task.host['sh_version']['hardware'][0].split("-")
     sw_model = sw_model[1]
@@ -135,10 +133,7 @@ def stack_upgrader(task):
         'C3650': upgrade_3650,
     }
 
-  
     if task.host['upgrade'] == True:
-        # copy file to switch
-        #file_copy(task)
         # run function to upgrade
         upgrader[sw_model](task)
 
@@ -154,7 +149,8 @@ def upgrade_3750(task):
         task=netmiko_send_command,
         use_timing=True,
         command_string=cmd,
-        delay_factor=100
+        delay_factor=25,
+        max_loops=2500
     )
 
     # print upgrade results
@@ -162,7 +158,7 @@ def upgrade_3750(task):
     for line in result:
         if "error" in line.lower() or "installed" in line.lower():
             print(f"{task.host}: {line}")
-            
+
 
 def upgrade_3650(task):
     print(f"{task.host}: Upgraging Catalyst 3650 software.")
@@ -182,7 +178,8 @@ def upgrade_3650(task):
         task=netmiko_send_command,
         use_timing=True,
         command_string=cmd,
-        delay_factor=150
+        delay_factor=25,
+        max_loops=2500
     )
 
     # print upgrade results
@@ -264,21 +261,33 @@ def main():
     # Start the threaded HTTP server
     c_print("Starting HTTP server")
     # change directory to images
-    os.chdir("images")
+    os.chdir("/images")
     # set http server ip
     http_svr = nr.inventory.defaults.data['http_ip']
     # init http server
     server = ThreadedHTTPServer(http_svr, 8000)
     # start http server
     server.start()
+    print('~'*80)
 
+    # gather switch info
+    c_print('Gathering device configurations')
+    # run The Norn to get info
+    nr.run(task=get_info)
+    print('~'*80)
 
-    # run The Norn run commands
-    nr.run(task=run_commands)
-    # run The Norn model check
-    #nr.run(task=stack_upgrader)
+    # checking switch version
+    c_print('Check switch software version')
     # run The Norn version check
-    #nr.run(task=check_ver)
+    nr.run(task=check_ver)
+    print('~'*80)
+
+   # upgrade switch software
+    c_print('Upgrading Catalyst switch stack software')
+    # run The Norn model check
+    nr.run(task=stack_upgrader)
+    print('~'*80)
+
     # run The Norn file copy
     #nr.run(task=file_copy)
     # run The Norn set boot
@@ -286,11 +295,14 @@ def main():
     # run The Norn reload
     #nr.run(task=reload_sw)
 
+
     # Close the server
     server.stop()
     c_print("Stopping HTTP server")
-
+    # print failed hosts
     c_print(f"Failed hosts: {nr.data.failed_hosts}")
+    print('~'*80)
+
 
 
 if __name__ == "__main__":
