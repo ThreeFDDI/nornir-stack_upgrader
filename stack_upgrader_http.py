@@ -150,6 +150,8 @@ def stack_upgrader(task):
                 cmd = f"request platform software package install switch all file \
                     http://{task.host['http_ip']}:8000/{upgrade_img} on-reboot"
 
+    print(cmd)
+
     # run upgrade command on switch stack
     upgrade_sw = task.run(
         task=netmiko_send_command,
