@@ -151,6 +151,7 @@ def stack_upgrader(task):
                     http://{task.host['http_ip']}:8000/{upgrade_img} on-reboot"
 
     print(cmd)
+    print()
 
     # run upgrade command on switch stack
     upgrade_sw = task.run(
