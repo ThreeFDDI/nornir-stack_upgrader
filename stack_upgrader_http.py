@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python3
 '''
 This script is used to upgrade software on Cisco Catalyst 3750 and 3650 switch stacks.
 
