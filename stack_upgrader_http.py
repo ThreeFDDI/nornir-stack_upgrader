@@ -87,23 +87,6 @@ def get_info(task):
     sw_model = sw_model[1]
     task.host['sw_model'] = sw_model
 
-# is this needed? maybe later
-
-#    # run "show switch detail" on each host
-#    sh_switch = task.run(
-#        task=netmiko_send_command,
-#        command_string="show switch detail",
-#        use_textfsm=True,
-#    )
-#
-#    # save show switch detail output to task.host
-#    task.host['sh_switch'] = sh_switch.result
-#    # init and build list of active switches in stack
-#    task.host['switches'] = []
-#    for sw in sh_switch.result:
-#        if sw['state'] == 'Ready':
-#            task.host['switches'].append(sw['switch'])
-
 
 # Compare current and desired software version
 def check_ver(task):
@@ -167,17 +150,11 @@ def stack_upgrader(task):
             if status in line.lower():
                 print(f"{task.host}: {line}")
 
-    sh_boot = task.run(
-        task=netmiko_send_command,
-        command_string="show boot",
-        use_textfsm=True,
-    )
-    print(sh_boot.result)
 
 # Reload switches
 def reload_sw(task):
     # Check if upgrade reload needed
-    if task.host['upgrade'] != True:
+    if task.host['upgrade'] == True:
         c_print(f"*** {task.host} is reloading ***")
         # send reload command
         reload = task.run(
@@ -193,7 +170,9 @@ def reload_sw(task):
                 command_string="",
             )
 
-   
+   # is this needed? maybe later
+
+
 def main():
   
     # initialize The Norn
