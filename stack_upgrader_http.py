@@ -41,7 +41,7 @@ def kickoff(norn, username=None, password=None):
     # print banner
     print()
     print('~'*80)
-    c_print('This script will apply IBNS dot1x configurations to Cisco switches')
+    c_print('This script will update software on Cisco Catalyst switch stacks')
     #c_print(f"*** {task.host}: dot1x configuration applied ***")
     c_print('Checking inventory for credentials')
     # check for existing credentials in inventory
@@ -58,7 +58,7 @@ def kickoff(norn, username=None, password=None):
 
 # Run show commands on each switch
 def run_commands(task):
-    print(f'{task.host}: running show comands.')
+    c_print(f'*** {task.host}: running show comands ***')
     # run "show version" on each host
     sh_version = task.run(
         task=netmiko_send_command,
@@ -262,17 +262,21 @@ def main():
     kickoff(nr)
     
     # Start the threaded HTTP server
+    c_print("Starting HTTP server")
+    # change directory to images
     os.chdir("images")
-    
-    print("Starting HTTP server.")
-    server = ThreadedHTTPServer('10.165.13.125', 8000)
+    # set http server ip
+    http_svr = nr.inventory.defaults.data['http_ip']
+    # init http server
+    server = ThreadedHTTPServer(http_svr, 8000)
+    # start http server
     server.start()
 
 
     # run The Norn run commands
     nr.run(task=run_commands)
     # run The Norn model check
-    nr.run(task=stack_upgrader)
+    #nr.run(task=stack_upgrader)
     # run The Norn version check
     #nr.run(task=check_ver)
     # run The Norn file copy
@@ -284,9 +288,9 @@ def main():
 
     # Close the server
     server.stop()
-    print("Stopping HTTP server.")
+    c_print("Stopping HTTP server")
 
-    print(f"Failed hosts: {nr.data.failed_hosts}")
+    c_print(f"Failed hosts: {nr.data.failed_hosts}")
 
 
 if __name__ == "__main__":
