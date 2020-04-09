@@ -129,43 +129,27 @@ def check_ver(task):
 # Stack upgrader main function
 def stack_upgrader(task):
     sw_model = task.host['sw_model']
+    upgrade_img = task.host[sw_model]['upgrade_img']
     if task.host['upgrade'] == True:
         # run function to upgrade
         c_print(f"*** {task.host}: Upgraging Catalyst {sw_model} software ***")
-        
+        if '3750' in sw_model:
+            cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
+                http://{task.host['http_ip']}:8000/{upgrade_img}"
 
-        upgrade_img = task.host[sw_model]['upgrade_img']
-        cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
-            http://{task.host['http_ip']}:8000/{upgrade_img}"
+        elif '3650' in sw_model or '3850' in sw_model:
+            if task.host['current_version'].startswith("16"):
+                print("16.x")
+                cmd = f"request platform software package install switch all file \
+                    http://{task.host['http_ip']}:8000/{upgrade_img} new auto-copy"
+            else:
+                print("NOT 16.x")
+                cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
+                    http://{task.host['http_ip']}:8000/{upgrade_img}"
 
-    # run upgrade command on switch stack
-    upgrade_sw = task.run(
-        task=netmiko_send_command,
-        use_timing=True,
-        command_string=cmd,
-        delay_factor=25,
-        max_loops=2500
-    )
-
-    # print upgrade results
-    result = upgrade_sw.result.splitlines()
-    for line in result:
-        if "error" in line.lower() or "installed" in line.lower():
-            c_print(f"*** {task.host}: {line} ***")
-
-
-def upgrade_3650(task):
-    c_print(f"*** {task.host}: Upgraging Catalyst 3650 software ***")
-    upgrade_img = task.host['upgrade_img']
-    
-    if task.host['current_version'].startswith("16"):
-        print("16.x")
-        cmd = f"request platform software package install switch all file \
-            http://{task.host['http_ip']}:8000/{upgrade_img} new auto-copy"
-    else:
-        print("NOT 16.x")
-        cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
-            http://{task.host['http_ip']}:8000/{upgrade_img}"
+        elif '9300' in sw_model:
+                cmd = f"request platform software package install switch all file \
+                    http://{task.host['http_ip']}:8000/{upgrade_img} on-reboot"
 
     # run upgrade command on switch stack
     upgrade_sw = task.run(
@@ -175,38 +159,13 @@ def upgrade_3650(task):
         delay_factor=25,
         max_loops=2500
     )
-
     # print upgrade results
-    #print(upgrade_sw.result)
-
     statuses = ['error','installed','fail','success']
     result = upgrade_sw.result.splitlines()
     for line in result:
         for status in statuses:
             if status in line.lower():
                 c_print(f"*** {task.host}: {line} ***")
-
-
-def upgrade_9300(task):
-    print(f"{task.host}: Upgraging Catalyst 9300 software.")
-    upgrade_img = task.host['upgrade_img']
-    cmd = f"request platform software package install switch all file \
-        http://{task.host['http_ip']}:8000/{upgrade_img} on-reboot"
-
-    # run upgrade command on switch stack
-    upgrade_sw = task.run(
-        task=netmiko_send_command,
-        use_timing=True,
-        command_string=cmd,
-        delay_factor=25,
-        max_loops=2500
-    )
-
-    # print upgrade results
-    result = upgrade_sw.result.splitlines()
-    for line in result:
-        if "error" in line.lower() or "installed" in line.lower():
-            c_print(f"*** {task.host}: {line} ***")
 
 
 # Reload switches
@@ -279,6 +238,8 @@ def main():
 
    # upgrade switch software
     c_print('Upgrading Catalyst switch stack software')
+    # prompt to proceed
+    proceed()
     # run The Norn model check
     nr.run(task=stack_upgrader)
     print('~'*80)
