@@ -133,6 +133,8 @@ def stack_upgrader(task):
     if task.host['upgrade'] == True:
         # run function to upgrade
         c_print(f"*** {task.host}: Upgraging Catalyst {sw_model} software ***")
+
+        # upgrade commands based on switch hardware model 
         if '3750' in sw_model:
             cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
                 http://{task.host['http_ip']}:8000/{upgrade_img}"
@@ -212,7 +214,7 @@ def main():
     # run The Norn kickoff
     kickoff(nr)
     
-    # Start the threaded HTTP server
+    # start the threaded HTTP server
     c_print("Starting HTTP server")
     # change directory to images
     os.chdir("/images")
@@ -231,7 +233,7 @@ def main():
     print('~'*80)
 
     # checking switch version
-    c_print('Check switch software version')
+    c_print('Checking switch software versions')
     # run The Norn version check
     nr.run(task=check_ver)
     print('~'*80)
@@ -244,21 +246,20 @@ def main():
     nr.run(task=stack_upgrader)
     print('~'*80)
 
-    # run The Norn file copy
-    #nr.run(task=file_copy)
-    # run The Norn set boot
-    #nr.run(task=set_boot)
+   # upgrade switch software
+    c_print('Rebooting Catalyst switch stacks')
+    # prompt to proceed
+    proceed()
     # run The Norn reload
-    #nr.run(task=reload_sw)
+    nr.run(task=reload_sw)
+    print('~'*80)
 
-
-    # Close the server
+    # shut down the HTTP server
     server.stop()
     c_print("Stopping HTTP server")
     # print failed hosts
     c_print(f"Failed hosts: {nr.data.failed_hosts}")
     print('~'*80)
-
 
 
 if __name__ == "__main__":
