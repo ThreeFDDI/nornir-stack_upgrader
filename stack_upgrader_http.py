@@ -1,6 +1,22 @@
 #!/usr/local/bin/python3
 '''
 This script is used to upgrade software on Cisco Catalyst 3750 and 3650 switch stacks.
+
+Required variables:
+
+C3750V2:
+    upgrade_version: '12.2(55)SE12'
+    upgrade_img: 'c3750-ipservicesk9-tar.122-55.SE12.tar'
+C3750x:
+    upgrade_version: '15.2(4)E8'
+    upgrade_img: 'c3750e-universalk9-tar.152-4.E8.tar'
+C3650:
+    upgrade_version: '16.9.4'
+    upgrade_img: 'cat3k_caa-universalk9.16.09.04.SPA.bin'
+C9300:  
+    upgrade_version: '16.9.4'
+    upgrade_img: 'cat9k_iosxe.16.09.04.SPA.bin'
+
 '''
 
 import threading
