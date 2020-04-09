@@ -1,0 +1,18 @@
+---
+switches:
+  platform: cisco_ios
+  port: 22
+  data:
+    http_ip: 172.20.58.101
+    cat3750v2:
+      upgrade_version: '12.2(55)SE12'
+      upgrade_img: 'c3750-ipservicesk9-tar.122-55.SE12.tar'
+    cat3750x:
+      upgrade_version: '15.2(4)E8'
+      upgrade_img: 'c3750e-universalk9-tar.152-4.E8.tar'
+    cat3650:
+      upgrade_version: '16.9.4'
+      upgrade_img: 'cat3k_caa-universalk9.16.09.04.SPA.bin'
+    cat9300:  
+      upgrade_version: '16.9.4'
+      upgrade_img: 'cat9k_iosxe.16.09.04.SPA.bin' 
