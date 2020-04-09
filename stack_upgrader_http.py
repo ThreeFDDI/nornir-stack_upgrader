@@ -6,6 +6,7 @@ This script is used to upgrade software on Cisco Catalyst 3750 and 3650 switch s
 import threading
 import socketserver
 import os, sys, time, socket
+from getpass import getpass
 from nornir import InitNornir
 from nornir.core.filter import F
 from nornir.plugins.functions.text import print_result
@@ -14,6 +15,45 @@ from nornir.plugins.tasks.networking import netmiko_send_command
 from nornir.plugins.tasks.networking import netmiko_file_transfer
 from http.server import SimpleHTTPRequestHandler
 from pprint import pprint as pp
+
+
+# print formatting function
+def c_print(printme):
+    # Print centered text with newline before and after
+    print(f"\n" + printme.center(80, ' ') + "\n")
+
+
+# continue banner
+def proceed():
+    # print banner to proceed
+    c_print('********** PROCEED? **********')
+    # capture user input
+    confirm = input(" "*36 + '(y/n) ')
+    # quit script if not confirmed
+    if confirm.lower() != 'y':
+        c_print("******* EXITING SCRIPT *******")
+        print('~'*80)    
+        exit()
+
+
+# set device credentials
+def kickoff(norn, username=None, password=None):
+    # print banner
+    print()
+    print('~'*80)
+    c_print('This script will apply IBNS dot1x configurations to Cisco switches')
+    #c_print(f"*** {task.host}: dot1x configuration applied ***")
+    c_print('Checking inventory for credentials')
+    # check for existing credentials in inventory
+    for host_obj in norn.inventory.hosts.values():
+        # set username and password if empty
+        if not host_obj.username:
+            c_print('Please enter device credentials:')
+            host_obj.username = input("Username: ")
+            host_obj.password = getpass()
+            print()
+
+    print('~'*80)
 
 
 # Run show commands on each switch
@@ -218,6 +258,8 @@ def main():
     nr = InitNornir()
     # filter The Norn
     nr = nr.filter(platform="cisco_ios")
+    # run The Norn kickoff
+    kickoff(nr)
     
     # Start the threaded HTTP server
     os.chdir("images")
