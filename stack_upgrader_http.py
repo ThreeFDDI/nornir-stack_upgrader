@@ -197,14 +197,15 @@ def upgrade_9300(task):
     print(f"{task.host}: Upgraging Catalyst 9300 software.")
     upgrade_img = task.host['upgrade_img']
     cmd = f"request platform software package install switch all file \
-        http://10.165.13.125:8000/{upgrade_img} on-reboot"
+        http://{task.host['http_ip']}:8000/{upgrade_img} on-reboot"
 
     # run upgrade command on switch stack
     upgrade_sw = task.run(
         task=netmiko_send_command,
         use_timing=True,
         command_string=cmd,
-        delay_factor=100
+        delay_factor=25,
+        max_loops=2500
     )
 
     # print upgrade results

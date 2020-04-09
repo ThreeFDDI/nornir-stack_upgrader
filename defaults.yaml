@@ -1,5 +1,3 @@
 ---
 username: admin
 password: cisco
-data:
-  http_ip: 172.20.58.101
