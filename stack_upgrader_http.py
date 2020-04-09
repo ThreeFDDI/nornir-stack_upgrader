@@ -105,8 +105,13 @@ def get_info(task):
 # Compare current and desired software version
 def check_ver(task):
 
+    # pull model from show version
+    sw_model = task.host['sh_version']['hardware'][0].split("-")
+    sw_model = sw_model[1]
+    task.host['sw_model'] = sw_model
+
     # upgraded image to be used
-    desired = task.host['upgrade_version']
+    desired = task.host[sw_model]['upgrade_version']
     # record current software version
     current = task.host['current_version']
 
@@ -123,26 +128,15 @@ def check_ver(task):
 
 # Stack upgrader main function
 def stack_upgrader(task):
-    # pull model from show version
-    sw_model = task.host['sh_version']['hardware'][0].split("-")
-    sw_model = sw_model[1]
-    # list of possible switch models
-    upgrader = {
-        'C3750V2': upgrade_3750,
-        'C3750X': upgrade_3750,
-        'C3650': upgrade_3650,
-    }
-
+    sw_model = task.host['sw_model']
     if task.host['upgrade'] == True:
         # run function to upgrade
-        upgrader[sw_model](task)
+        c_print(f"*** {task.host}: Upgraging Catalyst {sw_model} software ***")
+        
 
-
-def upgrade_3750(task):
-    c_print(f"*** {task.host}: Upgraging Catalyst 3750 software ***")
-    upgrade_img = task.host['upgrade_img']
-    cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
-        http://{task.host['http_ip']}:8000/{upgrade_img}"
+        upgrade_img = task.host[sw_model]['upgrade_img']
+        cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
+            http://{task.host['http_ip']}:8000/{upgrade_img}"
 
     # run upgrade command on switch stack
     upgrade_sw = task.run(
@@ -212,7 +206,7 @@ def upgrade_9300(task):
     result = upgrade_sw.result.splitlines()
     for line in result:
         if "error" in line.lower() or "installed" in line.lower():
-            print(f"{task.host}: {line}")
+            c_print(f"*** {task.host}: {line} ***")
 
 
 # Reload switches
