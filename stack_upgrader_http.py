@@ -8,16 +8,11 @@ import socketserver
 import os, sys, time, socket
 from getpass import getpass
 from nornir import InitNornir
-from nornir.core.filter import F
-from nornir.plugins.functions.text import print_result
-from nornir.plugins.tasks.networking import netmiko_send_config
 from nornir.plugins.tasks.networking import netmiko_send_command
-from nornir.plugins.tasks.networking import netmiko_file_transfer
 from http.server import SimpleHTTPRequestHandler
-from pprint import pprint as pp
 
 
-# http server for file transfer
+# HTTP server for file transfer
 class ThreadedHTTPServer(object):
     handler = SimpleHTTPRequestHandler
     def __init__(self, host, port):
@@ -33,13 +28,13 @@ class ThreadedHTTPServer(object):
         self.server.server_close()
 
 
-# print formatting function
+# Print formatting function
 def c_print(printme):
     # Print centered text with newline before and after
     print(f"\n" + printme.center(80, ' ') + "\n")
 
 
-# continue banner
+# Continue banner
 def proceed():
     # print banner to proceed
     c_print('********** PROCEED? **********')
@@ -54,7 +49,7 @@ def proceed():
         c_print("********* PROCEEDING *********")
 
 
-# set device credentials
+# Set device credentials
 def kickoff(norn, username=None, password=None):
     # print banner
     print()
@@ -82,34 +77,37 @@ def get_info(task):
         use_textfsm=True,
     )
 
-    # run "show switch detail" on each host
-    sh_switch = task.run(
-        task=netmiko_send_command,
-        command_string="show switch detail",
-        use_textfsm=True,
-    )
-
     # save show version output to task.host
     task.host['sh_version'] = sh_version.result[0]
     # pull version from show version
     task.host['current_version'] = task.host['sh_version']['version']
-    # save show switch detail output to task.host
-    task.host['sh_switch'] = sh_switch.result
-    # init and build list of active switches in stack
-    task.host['switches'] = []
-    for sw in sh_switch.result:
-        if sw['state'] == 'Ready':
-            task.host['switches'].append(sw['switch'])
-
-
-# Compare current and desired software version
-def check_ver(task):
 
     # pull model from show version
     sw_model = task.host['sh_version']['hardware'][0].split("-")
     sw_model = sw_model[1]
     task.host['sw_model'] = sw_model
 
+# is this needed? maybe later
+
+#    # run "show switch detail" on each host
+#    sh_switch = task.run(
+#        task=netmiko_send_command,
+#        command_string="show switch detail",
+#        use_textfsm=True,
+#    )
+#
+#    # save show switch detail output to task.host
+#    task.host['sh_switch'] = sh_switch.result
+#    # init and build list of active switches in stack
+#    task.host['switches'] = []
+#    for sw in sh_switch.result:
+#        if sw['state'] == 'Ready':
+#            task.host['switches'].append(sw['switch'])
+
+
+# Compare current and desired software version
+def check_ver(task):
+    sw_model = task.host['sw_model']
     # upgraded image to be used
     desired = task.host[sw_model]['upgrade_version']
     # record current software version
@@ -167,44 +165,35 @@ def stack_upgrader(task):
     for line in result:
         for status in statuses:
             if status in line.lower():
-                c_print(f"*** {task.host}: {line} ***")
+                print(f"{task.host}: {line}")
 
+    sh_boot = task.run(
+        task=netmiko_send_command,
+        command_string="show boot",
+        use_textfsm=True,
+    )
+    print(sh_boot.result)
 
 # Reload switches
 def reload_sw(task):
-
-    confirm = "YES"
-    """
-    #confirm = input("All switches are ready for reload.\n
-    # Proceed with reloading all selected switches?\n
-    # Type 'YES' to continue:\n")
-    """
-    if confirm == "YES":
-        print("\n*** RELOADING ALL SELECTED SWITCHES ***\n")
-
     # Check if upgrade reload needed
-    if task.host['upgrade'] == True:
-        print(f"{task.host} reloading...")
-
+    if task.host['upgrade'] != True:
+        c_print(f"*** {task.host} is reloading ***")
+        # send reload command
         reload = task.run(
             task=netmiko_send_command,
             command_string="reload",
             use_timing=True,
         )        
-        
-        # Confirm the reload (if 'confirm' is in the output)
-        for host in reload.result:
+        # confirm if needed
+        if 'confirm' in reload.result:
+            task.run(
+                task=netmiko_send_command,
+                use_timing=True,
+                command_string="",
+            )
 
-            if 'confirm' in reload.result:
-                task.run(
-                    task=netmiko_send_command,
-                    use_timing=True,
-                    command_string="",
-                )
-
-        print_result(reload)
    
-
 def main():
   
     # initialize The Norn
@@ -230,12 +219,16 @@ def main():
     c_print('Gathering device configurations')
     # run The Norn to get info
     nr.run(task=get_info)
+    # print failed hosts
+    c_print(f"Failed hosts: {nr.data.failed_hosts}")
     print('~'*80)
 
     # checking switch version
     c_print('Checking switch software versions')
     # run The Norn version check
     nr.run(task=check_ver)
+    # print failed hosts
+    c_print(f"Failed hosts: {nr.data.failed_hosts}")
     print('~'*80)
 
    # upgrade switch software
@@ -244,6 +237,8 @@ def main():
     proceed()
     # run The Norn model check
     nr.run(task=stack_upgrader)
+    # print failed hosts
+    c_print(f"Failed hosts: {nr.data.failed_hosts}")
     print('~'*80)
 
    # upgrade switch software
