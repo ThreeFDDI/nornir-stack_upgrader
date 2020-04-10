@@ -7,7 +7,7 @@ Required variables:
 C3750V2:
     upgrade_version: '12.2(55)SE12'
     upgrade_img: 'c3750-ipservicesk9-tar.122-55.SE12.tar'
-C3750x:
+C3750X:
     upgrade_version: '15.2(4)E8'
     upgrade_img: 'c3750e-universalk9-tar.152-4.E8.tar'
 C3650:
@@ -234,7 +234,7 @@ def main():
     # prompt to proceed
     proceed()
     # run The Norn model check
-    nr.run(task=stack_upgrader)
+    nr.run(task=stack_upgrader, num_workers=1)
     # print failed hosts
     c_print(f"Failed hosts: {nr.data.failed_hosts}")
     print('~'*80)
