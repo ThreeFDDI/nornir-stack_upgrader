@@ -25,6 +25,7 @@ import os, sys, time, socket
 from getpass import getpass
 from nornir import InitNornir
 from nornir.plugins.tasks.networking import netmiko_send_command
+from nornir.plugins.tasks.networking import netmiko_save_config
 from http.server import SimpleHTTPRequestHandler
 
 
@@ -175,6 +176,11 @@ def reload_sw(task):
     # Check if upgrade reload needed
     if task.host['upgrade'] == True:
         c_print(f"*** {task.host} is reloading ***")
+        
+        # save config
+        task.run(
+            task=netmiko_save_config,
+        )
         # send reload command
         reload = task.run(
             task=netmiko_send_command,
@@ -188,8 +194,6 @@ def reload_sw(task):
                 use_timing=True,
                 command_string="",
             )
-
-   # is this needed? maybe later
 
 
 def main():
