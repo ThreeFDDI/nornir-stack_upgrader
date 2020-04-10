@@ -158,8 +158,8 @@ def stack_upgrader(task):
         task=netmiko_send_command,
         use_timing=True,
         command_string=cmd,
-        delay_factor=25,
-        max_loops=5000
+        delay_factor=150,
+#        max_loops=5000
     )
     # print upgrade results
     statuses = ['error','installed','fail','success']
