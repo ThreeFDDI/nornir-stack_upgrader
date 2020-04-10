@@ -139,11 +139,9 @@ def stack_upgrader(task):
 
         elif '3650' in sw_model or '3850' in sw_model:
             if task.host['current_version'].startswith("16"):
-                print("16.x")
                 cmd = f"request platform software package install switch all file " + \
                     f"http://{task.host['http_ip']}:8000/{upgrade_img} new auto-copy"
             else:
-                print("NOT 16.x")
                 cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe " + \
                     f"http://{task.host['http_ip']}:8000/{upgrade_img}"
 
