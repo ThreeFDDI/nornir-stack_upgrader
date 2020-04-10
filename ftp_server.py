@@ -10,15 +10,14 @@ def main():
 
     # Define a new user having full r/w permissions and a read-only
     # anonymous user
-    os.chdir("/images")
-    authorizer.add_anonymous(os.getcwd())
+    authorizer.add_anonymous('/images')
 
     # Instantiate FTP handler class
     handler = FTPHandler
     handler.authorizer = authorizer
 
     # Instantiate FTP server class and listen on 0.0.0.0:8000
-    address = ('', 8000)
+    address = ('', 21)
     server = FTPServer(address, handler)
 
     # set a limit for connections
@@ -28,6 +27,6 @@ def main():
     # start ftp server
     server.serve_forever()
 
-    server.
+
 if __name__ == '__main__':
     main()
