@@ -159,7 +159,7 @@ def stack_upgrader(task):
         use_timing=True,
         command_string=cmd,
         delay_factor=25,
-        max_loops=2500
+        max_loops=5000
     )
     # print upgrade results
     statuses = ['error','installed','fail','success']
