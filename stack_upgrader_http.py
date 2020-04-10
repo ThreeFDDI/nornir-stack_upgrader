@@ -133,22 +133,22 @@ def stack_upgrader(task):
 
         # upgrade commands based on switch hardware model 
         if '3750' in sw_model:
-            cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
-                http://{task.host['http_ip']}:8000/{upgrade_img}"
+            cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe " + \
+                f"http://{task.host['http_ip']}:8000/{upgrade_img}"
 
         elif '3650' in sw_model or '3850' in sw_model:
             if task.host['current_version'].startswith("16"):
                 print("16.x")
-                cmd = f"request platform software package install switch all file \
-                    http://{task.host['http_ip']}:8000/{upgrade_img} new auto-copy"
+                cmd = f"request platform software package install switch all file " + \
+                    f"http://{task.host['http_ip']}:8000/{upgrade_img} new auto-copy"
             else:
                 print("NOT 16.x")
-                cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe \
-                    http://{task.host['http_ip']}:8000/{upgrade_img}"
+                cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe " + \
+                    f"http://{task.host['http_ip']}:8000/{upgrade_img}"
 
         elif '9300' in sw_model:
-                cmd = f"request platform software package install switch all file \
-                    http://{task.host['http_ip']}:8000/{upgrade_img} on-reboot"
+                cmd = f"request platform software package install switch all file " + \
+                    f"http://{task.host['http_ip']}:8000/{upgrade_img} on-reboot"
 
     print(cmd)
     print()
@@ -158,8 +158,8 @@ def stack_upgrader(task):
         task=netmiko_send_command,
         use_timing=True,
         command_string=cmd,
-        delay_factor=150,
-#        max_loops=5000
+        delay_factor=100,
+        max_loops=1000
     )
     # print upgrade results
     statuses = ['error','installed','fail','success']
