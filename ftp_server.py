@@ -17,7 +17,7 @@ def main():
     handler.authorizer = authorizer
 
     # Instantiate FTP server class and listen on 0.0.0.0:8000
-    address = ('', 21)
+    address = ('', 8000)
     server = FTPServer(address, handler)
 
     # set a limit for connections
