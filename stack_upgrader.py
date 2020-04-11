@@ -116,19 +116,19 @@ def stack_upgrader(task):
         # upgrade commands based on switch hardware model 
         if '3750' in sw_model:
             cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe " + \
-                f"ftp://{task.host['http_ip']}/{upgrade_img}"
+                f"ftp://{task.host['ftp_ip']}/{upgrade_img}"
 
         elif '3650' in sw_model or '3850' in sw_model:
             if task.host['current_version'].startswith("16"):
                 cmd = f"request platform software package install switch all file " + \
-                    f"ftp://{task.host['http_ip']}/{upgrade_img} new auto-copy"
+                    f"ftp://{task.host['ftp_ip']}/{upgrade_img} new auto-copy"
             else:
                 cmd = f"archive download-sw /imageonly /allow-feature-upgrade /safe " + \
-                    f"ftp://{task.host['http_ip']}/{upgrade_img}"
+                    f"ftp://{task.host['ftp_ip']}/{upgrade_img}"
 
         elif '9300' in sw_model:
                 cmd = f"request platform software package install switch all file " + \
-                    f"ftp://{task.host['http_ip']}/{upgrade_img} on-reboot"
+                    f"ftp://{task.host['ftp_ip']}/{upgrade_img} on-reboot"
 
     print(cmd)
     print()
