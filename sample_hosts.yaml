@@ -1,5 +1,0 @@
----
-cat3750_lab:
-  hostname: 10.10.10.41
-  groups:
-    - switches
