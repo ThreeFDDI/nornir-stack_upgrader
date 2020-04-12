@@ -95,14 +95,14 @@ def check_ver(task):
     current = task.host['current_version']
 
     # compare current with desired version
-    assert current == desired,
-        f"*** {task.host}: running {current} upgrade NOT needed ***"
+    assert current == desired, "FAIL"
+#        f"*** {task.host}: running {current} upgrade NOT needed ***"
         # set host upgrade flag to False
-        task.host['upgrade'] = False
-    else:
-        c_print(f"*** {task.host}: running {current} must be upgraded ***")
-        # set host upgrade flag to True
-        task.host['upgrade'] = True
+#        task.host['upgrade'] = False
+#    else:
+#        c_print(f"*** {task.host}: running {current} must be upgraded ***")
+#        # set host upgrade flag to True
+#        task.host['upgrade'] = True
 
 
 # Stack upgrader main function
