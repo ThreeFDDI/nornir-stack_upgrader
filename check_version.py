@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 '''
-This script is used to upgrade software on Cisco Catalyst 3750 and 3650 switch stacks.
+This script is uses the Nornir framework to verify the software version on 
+Cisco Catalyst 3750 and 3650 switch stacks.
 
 Required variables:
 
@@ -19,7 +20,7 @@ C9300:
 
 '''
 
-import os, sys, pytest
+import os, sys
 from getpass import getpass
 from nornir import InitNornir
 from nornir.plugins.tasks.networking import netmiko_send_command
@@ -32,27 +33,12 @@ def c_print(printme):
     print(f"\n" + printme.center(80, ' ') + "\n")
 
 
-# Continue banner
-def proceed():
-    # print banner to proceed
-    c_print('********** PROCEED? **********')
-    # capture user input
-    confirm = input(" "*36 + '(y/n) ')
-    # quit script if not confirmed
-    if confirm.lower() != 'y':
-        c_print("******* EXITING SCRIPT *******")
-        print('~'*80)    
-        exit()
-    else:
-        c_print("********* PROCEEDING *********")
-
-
 # Set device credentials
 def kickoff(norn, username=None, password=None):
     # print banner
     print()
     print('~'*80)
-    c_print('This script will upgrade software on Cisco Catalyst switch stacks')
+    c_print('This script will verify the software version on Cisco Catalyst switch stacks')
     #c_print(f"*** {task.host}: dot1x configuration applied ***")
     c_print('Checking inventory for credentials')
     # check for existing credentials in inventory
@@ -85,6 +71,15 @@ def get_info(task):
     sw_model = sw_model[1]
     task.host['sw_model'] = sw_model
 
+    # run "show boot" on each host
+    sh_boot = task.run(
+        task=netmiko_send_command,
+        command_string="show boot",
+        use_textfsm=True,
+    )
+    # save show boot version output to task.host
+    task.host['sh_boot'] = sh_boot.result[0]['boot_path'].split("/")[-1]
+
 
 # Compare current and desired software version
 def check_ver(task):
@@ -94,15 +89,28 @@ def check_ver(task):
     # record current software version
     current = task.host['current_version']
 
+    upgrade_img = task.host[sw_model]['upgrade_img']
+
     # compare current with desired version
-    assert current == desired, "FAIL"
-#        f"*** {task.host}: running {current} upgrade NOT needed ***"
+    if current == desired:
+        print(f"{' ' *10}*** {task.host}: running {current} upgrade NOT needed ***")
         # set host upgrade flag to False
-#        task.host['upgrade'] = False
-#    else:
-#        c_print(f"*** {task.host}: running {current} must be upgraded ***")
-#        # set host upgrade flag to True
-#        task.host['upgrade'] = True
+        task.host['upgrade'] = False
+    else:
+        print(f"{' ' *10}*** {task.host}: running {current} must be upgraded ***")
+        # set host upgrade flag to True
+        task.host['upgrade'] = True
+
+        if '3750' in sw_model:
+            boot_ver = ".".join(task.host['sh_boot'].split(".")[-3:-1])
+
+            upgrade_ver = ".".join(upgrade_img.split(".")[-3:-1])
+
+            if boot_ver == upgrade_ver:
+                print(f"{' ' *10}*** {task.host}: will be upgraded to {desired} on next reboot ***")
+
+        elif '3650' in sw_model or '3850' in sw_model:
+            _stuff = None
 
 
 # Stack upgrader main function
@@ -184,7 +192,6 @@ def main():
     # run The Norn kickoff
     kickoff(nr)
     
-
     # gather switch info
     c_print('Gathering device configurations')
     # run The Norn to get info
@@ -196,19 +203,7 @@ def main():
     # checking switch version
     c_print('Checking switch software versions')
     # run The Norn version check
-    nr.run(task=check_ver)
-    # print failed hosts
-    c_print(f"Failed hosts: {nr.data.failed_hosts}")
-    print('~'*80)
-
-#    # upgrade switch software
-#    c_print('Rebooting Catalyst switch stacks')
-#    # prompt to proceed
-#    proceed()
-#    # run The Norn reload
-#    nr.run(task=reload_sw)
-#    print('~'*80)
-
+    nr.run(task=check_ver, num_workers=1)
     # print failed hosts
     c_print(f"Failed hosts: {nr.data.failed_hosts}")
     print('~'*80)
