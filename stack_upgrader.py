@@ -47,22 +47,48 @@ def proceed():
         c_print("********* PROCEEDING *********")
 
 
-# Set device credentials
-def kickoff(norn, username=None, password=None):
+# set device credentials
+def kickoff():
     # print banner
     print()
     print('~'*80)
     c_print('This script will upgrade software on Cisco Catalyst switch stacks')
-    #c_print(f"*** {task.host}: dot1x configuration applied ***")
+
+    if len(sys.argv) < 2:
+        site = ""
+
+    else:
+        site = sys.argv[1] + "_"
+
+    # initialize The Norn
+    nr = InitNornir(
+        inventory={
+            "plugin": "nornir.plugins.inventory.simple.SimpleInventory",
+            "options": {
+                "host_file": f"inventory/{site}hosts.yaml",
+                "group_file": f"inventory/{site}groups.yaml",
+                "defaults_file": "inventory/defaults.yaml"
+            }
+        }
+    )
+    
+    # filter The Norn
+    nr = nr.filter(platform="ios")
+
     c_print('Checking inventory for credentials')
     # check for existing credentials in inventory
-    for host_obj in norn.inventory.hosts.values():
-        # set username and password if empty
-        if not host_obj.username:
-            c_print('Please enter device credentials:')
-            host_obj.username = input("Username: ")
-            host_obj.password = getpass()
-            print()
+
+    if nr.inventory.defaults.username == None or nr.inventory.defaults.password == None:
+        c_print('Please enter device credentials:')
+
+    if nr.inventory.defaults.username == None:
+        nr.inventory.defaults.username = input("Username: ")
+    
+    if nr.inventory.defaults.password == None:
+        nr.inventory.defaults.password = getpass()
+        print()
+    print('~'*80)
+    return nr
 
 
 # Run show commands on each switch
