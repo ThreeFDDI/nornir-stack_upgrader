@@ -47,6 +47,18 @@ def proceed():
         c_print("********* PROCEEDING *********")
 
 
+# test Nornir result
+def test_norn(task, result, type):
+    # test norn result
+    print(type(result))
+#    if type(result) == "nornir.core.task.MultiResult":
+    if type(result) == list:
+        if type(result[0]) == dict:
+            pass
+    else:
+        c_print(f'*** {task.host}: ERROR running show comands ***')
+
+
 # set device credentials
 def kickoff():
     # print banner
@@ -73,7 +85,7 @@ def kickoff():
     )
     
     # filter The Norn
-    nr = nr.filter(platform="cisco_ios")
+    nr = nr.filter(platform="ios")
 
     c_print('Checking inventory for credentials')
     # check for existing credentials in inventory
@@ -100,7 +112,8 @@ def get_info(task):
         command_string="show version",
         use_textfsm=True,
     )
-    print(sh_version)
+    # test Nornir result
+    test_norn(task, sh_version.result, dict)
     # save show version output to task.host
     task.host['sh_version'] = sh_version.result[0]
     # pull version from show version
@@ -111,6 +124,12 @@ def get_info(task):
     sw_model = sw_model[1]
     task.host['sw_model'] = sw_model
 
+    # run "flash" on each host
+    sh_flash = task.run(
+        task=netmiko_send_command,
+        command_string="show flash: | incl bytes",
+    )
+    print(sh_flash.result)
 
 # Compare current and desired software version
 def check_ver(task):
