@@ -73,7 +73,7 @@ def kickoff():
     )
     
     # filter The Norn
-    nr = nr.filter(platform="ios")
+    nr = nr.filter(platform="cisco_ios")
 
     c_print('Checking inventory for credentials')
     # check for existing credentials in inventory
@@ -100,7 +100,7 @@ def get_info(task):
         command_string="show version",
         use_textfsm=True,
     )
-
+    print(sh_version)
     # save show version output to task.host
     task.host['sh_version'] = sh_version.result[0]
     # pull version from show version
@@ -203,12 +203,8 @@ def reload_sw(task):
 
 def main():
   
-    # initialize The Norn
-    nr = InitNornir()
-    # filter The Norn
-    nr = nr.filter(platform="cisco_ios")
     # run The Norn kickoff
-    kickoff(nr)
+    nr = kickoff()
     
 
     # gather switch info
