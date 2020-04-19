@@ -47,21 +47,17 @@ def proceed():
         c_print("********* PROCEEDING *********")
 
 
-# test Nornir result
+# test Nornir textfsm result
 def test_norn_textfsm(task, result):
     # test norn result
-    if type(result) == list and type(result[0]) == dict:
-            pass
-    else:
+    if type(result) != list or type(result[0]) != dict:
         c_print(f'*** {task.host}: ERROR running Nornir task ***')
 
 
 # test Nornir result
 def test_norn(task, result):
     # test norn result
-    if type(result) == str:
-            pass
-    else:
+    if type(result) != str:
         c_print(f'*** {task.host}: ERROR running Nornir task ***')
 
 
