@@ -48,19 +48,21 @@ def proceed():
 
 
 # test Nornir result
-def test_norn(task, result, mytype):
+def test_norn_textfsm(task, result):
     # test norn result
-    print(type(result))
-    print(type(result[0]))
-    if type(result) == list:
-        if type(result[0]) != mytype:
+    if type(result) == list and type(result[0]) == dict:
             pass
-        else:
-            c_print(f'*** {task.host}: ERROR running Nornir task ***')
-
     else:
         c_print(f'*** {task.host}: ERROR running Nornir task ***')
-        #if type(result) == "nornir.core.task.MultiResult":
+
+
+# test Nornir result
+def test_norn(task, result):
+    # test norn result
+    if type(result) == str:
+            pass
+    else:
+        c_print(f'*** {task.host}: ERROR running Nornir task ***')
 
 
 # set device credentials
@@ -113,11 +115,12 @@ def get_info(task):
     # run "show version" on each host
     sh_version = task.run(
         task=netmiko_send_command,
-        command_string="show versin",
+        command_string="show version",
         use_textfsm=True,
     )
     # test Nornir result
-    test_norn(task, sh_version.result, dict)
+    print(sh_version)
+    test_norn_textfsm(task, sh_version.result)
     # save show version output to task.host
     task.host['sh_version'] = sh_version.result[0]
     # pull version from show version
@@ -133,6 +136,8 @@ def get_info(task):
         task=netmiko_send_command,
         command_string="show flash: | incl bytes",
     )
+    # test Nornir result
+    test_norn(task, sh_flash.result)
     print(sh_flash.result)
 
 # Compare current and desired software version
