@@ -48,15 +48,19 @@ def proceed():
 
 
 # test Nornir result
-def test_norn(task, result, type):
+def test_norn(task, result, mytype):
     # test norn result
     print(type(result))
-#    if type(result) == "nornir.core.task.MultiResult":
+    print(type(result[0]))
     if type(result) == list:
-        if type(result[0]) == dict:
+        if type(result[0]) != mytype:
             pass
+        else:
+            c_print(f'*** {task.host}: ERROR running Nornir task ***')
+
     else:
-        c_print(f'*** {task.host}: ERROR running show comands ***')
+        c_print(f'*** {task.host}: ERROR running Nornir task ***')
+        #if type(result) == "nornir.core.task.MultiResult":
 
 
 # set device credentials
@@ -109,7 +113,7 @@ def get_info(task):
     # run "show version" on each host
     sh_version = task.run(
         task=netmiko_send_command,
-        command_string="show version",
+        command_string="show versin",
         use_textfsm=True,
     )
     # test Nornir result
